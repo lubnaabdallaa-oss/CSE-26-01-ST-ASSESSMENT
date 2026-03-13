@@ -5,8 +5,7 @@ const {
   createBeneficiary,
   getBeneficiaries,
   getBeneficiaryById,
-  updateBeneficiary,
-  deleteBeneficiary
+  
 } = require("../controllers/beneficiaryController");
 
 router.post("/", createBeneficiary);

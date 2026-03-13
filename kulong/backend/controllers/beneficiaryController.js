@@ -1,92 +1,101 @@
 const mongoose = require("mongoose");
 const Beneficiary = require("../models/Beneficiary");
 
-/**
- * Helper: send error response
- */
-const handleServerError = (res, error, customMessage) => {
-  console.error(customMessage, error);
+const REQUIRED_FIELDS = [
+  "firstName",
+  "lastName",
+  "dateOfBirth",
+  "placeOfBirth",
+  "gender",
+  "nationality",
+  "maritalStatus",
+  "settlementCamp",
+  "dateOfJoining"
+];
 
-  return res.status(500).json({
+const sendError = (res, statusCode, message, extra = {}) => {
+  return res.status(statusCode).json({
     success: false,
-    message: customMessage,
+    message,
+    ...extra
+  });
+};
+
+const sendSuccess = (res, statusCode, message, data = null, extra = {}) => {
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    ...(data && { data }),
+    ...extra
+  });
+};
+
+const getMissingFields = (body) => {
+  return REQUIRED_FIELDS.filter((field) => {
+    const value = body[field];
+    return value === undefined || value === null || String(value).trim() === "";
+  });
+};
+
+const buildBeneficiaryData = (body) => ({
+  firstName: body.firstName.trim(),
+  lastName: body.lastName.trim(),
+  dateOfBirth: body.dateOfBirth,
+  placeOfBirth: body.placeOfBirth.trim(),
+  gender: body.gender.trim(),
+  nationality: body.nationality.trim(),
+  maritalStatus: body.maritalStatus.trim(),
+  settlementCamp: body.settlementCamp.trim(),
+  dateOfJoining: body.dateOfJoining
+});
+
+const handleServerError = (res, error, fallbackMessage) => {
+  console.error(fallbackMessage, error);
+
+  if (error.name === "ValidationError") {
+    return sendError(res, 400, "Validation failed", {
+      errors: Object.values(error.errors).map((err) => err.message)
+    });
+  }
+
+  if (error.name === "CastError") {
+    return sendError(res, 400, "Invalid data format");
+  }
+
+  return sendError(res, 500, fallbackMessage, {
     error: error.message
   });
 };
 
-/**
- * Helper: validate required fields
- */
-const validateRequiredFields = (body) => {
-  const requiredFields = [
-    "firstName",
-    "lastName",
-    "dateOfBirth",
-    "placeOfBirth",
-    "gender",
-    "nationality",
-    "maritalStatus",
-    "settlementCamp",
-    "dateOfJoining"
-  ];
-
-  const missingFields = requiredFields.filter(
-    (field) => !body[field] || String(body[field]).trim() === ""
-  );
-
-  return missingFields;
-};
-
-/**
- * Create beneficiary
- * POST /api/beneficiaries
- */
 const createBeneficiary = async (req, res) => {
   try {
-    const missingFields = validateRequiredFields(req.body);
+    const missingFields = getMissingFields(req.body);
 
     if (missingFields.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-        missingFields
-      });
+      return sendError(res, 400, "All fields are required", { missingFields });
     }
 
-    const beneficiaryData = {
-      firstName: req.body.firstName.trim(),
-      lastName: req.body.lastName.trim(),
-      dateOfBirth: req.body.dateOfBirth,
-      placeOfBirth: req.body.placeOfBirth.trim(),
-      gender: req.body.gender.trim(),
-      nationality: req.body.nationality.trim(),
-      maritalStatus: req.body.maritalStatus.trim(),
-      settlementCamp: req.body.settlementCamp.trim(),
-      dateOfJoining: req.body.dateOfJoining
-    };
-
+    const beneficiaryData = buildBeneficiaryData(req.body);
     const beneficiary = await Beneficiary.create(beneficiaryData);
 
-    return res.status(201).json({
-      success: true,
-      message: "Beneficiary registered successfully",
-      data: beneficiary
-    });
+    return sendSuccess(
+      res,
+      201,
+      "Beneficiary registered successfully",
+      beneficiary
+    );
   } catch (error) {
     return handleServerError(res, error, "Failed to create beneficiary");
   }
 };
 
-/**
- * Get all beneficiaries
- * GET /api/beneficiaries
- */
 const getBeneficiaries = async (req, res) => {
   try {
     const beneficiaries = await Beneficiary.find().sort({ createdAt: -1 });
 
     return res.status(200).json({
       success: true,
+      message: "Beneficiaries fetched successfully",
       count: beneficiaries.length,
       data: beneficiaries
     });
@@ -95,34 +104,26 @@ const getBeneficiaries = async (req, res) => {
   }
 };
 
-/**
- * Get single beneficiary by ID
- * GET /api/beneficiaries/:id
- */
 const getBeneficiaryById = async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid beneficiary ID"
-      });
+      return sendError(res, 400, "Invalid beneficiary ID");
     }
 
     const beneficiary = await Beneficiary.findById(id);
 
     if (!beneficiary) {
-      return res.status(404).json({
-        success: false,
-        message: "Beneficiary not found"
-      });
+      return sendError(res, 404, "Beneficiary not found");
     }
 
-    return res.status(200).json({
-      success: true,
-      data: beneficiary
-    });
+    return sendSuccess(
+      res,
+      200,
+      "Beneficiary fetched successfully",
+      beneficiary
+    );
   } catch (error) {
     return handleServerError(res, error, "Failed to fetch beneficiary");
   }

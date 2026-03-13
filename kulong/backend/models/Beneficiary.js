@@ -33,24 +33,32 @@ const beneficiarySchema = new mongoose.Schema(
       type: String,
       required: [true, "Nationality is required"],
       enum: [
-        "ugandan",
-        "kenyan",
-        "tanzanian",
-        "burundian",
-        "rwandese",
-        "somali",
-        "south_sudanese"
+        "Ugandan",
+        "Kenyan",
+        "Tanzanian",
+        "Burundian",
+        "Rwandese",
+        "Somali",
+        "South Sudanese"
       ]
     },
     maritalStatus: {
       type: String,
       required: [true, "Marital status is required"],
-      enum: ["single", "married", "divorced", "widowed", "separated"]
+      enum: ["Single", "Married", "Divorced", "Widowed", "Separated"]
     },
     settlementCamp: {
       type: String,
       required: [true, "Settlement camp is required"],
-      enum: ["gulu", "arua", "mbarara", "kasese", "busia", "mbale", "kigezi"]
+      enum: [
+        "Gulu Settlement Camp",
+        "Arua Settlement Camp",
+        "Mbarara Settlement Camp",
+        "Kasese Settlement Camp",
+        "Busia Settlement Camp",
+        "Mbale Settlement Camp",
+        "Kigezi Settlement Camp"
+      ]
     },
     dateOfJoining: {
       type: Date,
