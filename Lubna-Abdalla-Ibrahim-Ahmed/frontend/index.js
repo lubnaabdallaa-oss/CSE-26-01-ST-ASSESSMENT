@@ -1,62 +1,94 @@
 const form = document.getElementById("registrationForm");
+const successAlert = document.getElementById("successAlert");
+const inputs = form.querySelectorAll("input, select");
 
-form.addEventListener("submit", async function(e){
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-e.preventDefault();
+  let isValid = true;
 
-const firstName = document.getElementById("firstName").value;
-const lastName = document.getElementById("lastName").value;
-const placeOfBirth = document.getElementById("placeOfBirth").value;
+  // Reset validation classes
+  inputs.forEach(input => input.classList.remove("invalid", "valid"));
 
-const dateOfBirth = new Date(document.getElementById("dateOfBirth").value);
-const regDate = new Date(document.getElementById("registrationDate").value);
-const joinDate = new Date(document.getElementById("joinDate").value);
+  // Standard HTML5 validation
+  inputs.forEach(input => {
+    if (!input.checkValidity()) {
+      input.classList.add("invalid");
+      isValid = false;
+    } else {
+      input.classList.add("valid");
+    }
+  });
 
-if(firstName.length < 3 || lastName.length < 3 || placeOfBirth.length < 3){
-alert("Names must have at least 3 characters");
-return;
-}
+  // Custom validation for names
+  const firstName = document.getElementById("firstName").value.trim();
+  const lastName = document.getElementById("lastName").value.trim();
+  const placeOfBirth = document.getElementById("placeOfBirth").value.trim();
+  const dateOfBirth = new Date(document.getElementById("dateOfBirth").value);
+  const regDate = new Date(document.getElementById("registrationDate").value);
+  const joinDate = new Date(document.getElementById("joinDate").value);
 
-if(dateOfBirth >= regDate){
-alert("Date of birth must be before registration date");
-return;
-}
+  if (firstName.length < 3) {
+    document.getElementById("firstName").classList.add("invalid");
+    isValid = false;
+  }
+  if (lastName.length < 3) {
+    document.getElementById("lastName").classList.add("invalid");
+    isValid = false;
+  }
+  if (placeOfBirth.length < 3) {
+    document.getElementById("placeOfBirth").classList.add("invalid");
+    isValid = false;
+  }
 
-if(joinDate <= regDate){
-alert("Joining date must be after registration date");
-return;
-}
+  // Date validations
+  if (dateOfBirth >= regDate) {
+    document.getElementById("dateOfBirth").classList.add("invalid");
+    document.getElementById("registrationDate").classList.add("invalid");
+    isValid = false;
+    alert("Date of birth must be before registration date");
+  }
 
-const data = {
-firstName,
-lastName,
-placeOfBirth,
-dateOfBirth: dateOfBirth,
-dateOfRegistration: regDate,
-dateOfJoiningCamp: joinDate
-};
+  if (joinDate <= regDate) {
+    document.getElementById("joinDate").classList.add("invalid");
+    document.getElementById("registrationDate").classList.add("invalid");
+    isValid = false;
+    alert("Joining date must be after registration date");
+  }
 
-const response = await fetch("http://localhost:5000/api/register",{
+  // If valid, submit data
+  if (isValid) {
+    const data = {
+      firstName,
+      lastName,
+      placeOfBirth,
+      dateOfBirth,
+      dateOfRegistration: regDate,
+      dateOfJoiningCamp: joinDate
+    };
 
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify(data)
+    try {
+      const response = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
 
+      if (response.ok) {
+        successAlert.classList.remove("hidden");
+        form.reset();
+        inputs.forEach(input => input.classList.remove("valid"));
+      } else {
+        alert("Failed to register. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error connecting to server.");
+    }
+  }
 });
 
-if(response.ok){
-
-document.getElementById("successAlert").classList.remove("hidden");
-form.reset();
-
+// Close alert
+function closeAlert() {
+  successAlert.classList.add("hidden");
 }
-
-});
-
-function closeAlert(){
-
-document.getElementById("successAlert").classList.add("hidden");
-document.getElementById("registrationForm").reset();
-
-}
-

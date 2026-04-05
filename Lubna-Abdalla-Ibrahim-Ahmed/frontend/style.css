@@ -1,28 +1,62 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body (FIX: remove flex so layout works properly) */
 body {
   font-family: "Agency FB", "Arial Narrow", sans-serif;
   background: rgb(153, 204, 50);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
 }
 
-
-.logo img {
-  width: 100px;        
-  height: 100px;       
-  margin-bottom: 2px;
-  border-radius: 50%;  
-  object-fit: cover;   
+/* ========================= */
+/* TWO COLUMN LAYOUT */
+/* ========================= */
+.container {
+  display: flex;
+  min-height: 100vh;
 }
 
+/* LEFT: LOGO SIDE */
+.left-side {
+  flex: 1;
+  background: rgb(153, 204, 50);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
 
+/* Logo */
+.logo img {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* RIGHT: FORM SIDE */
+.right-side {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+}
+
+/* ========================= */
+/* LANDING PAGE */
+/* ========================= */
 .landing {
   background-image: url("/assessment/form images/bg.PNG");
   background-position: center;
-  height: 90vh;                     
+  background-size: cover;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -36,26 +70,32 @@ body {
   color: aliceblue;
 }
 
-
+/* Button */
 .register-btn {
   display: inline-block;
   padding: 12px 24px;
-  background-color:white;
+  background-color: white;
   color: green;
   text-decoration: none;
   font-size: 1.2em;
   border-radius: 5px;
+  transition: 0.3s;
 }
 
 .register-btn:hover {
   background-color: rgb(153, 204, 50);
+  color: white;
 }
 
+/* ========================= */
+/* FORM */
+/* ========================= */
 main {
   background: white;
   padding: 30px;
   border-radius: 8px;
-  width: 400px;
+  width: 90%;              /* FIX: responsive */
+  max-width: 400px;        /* FIX: keep your design */
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
@@ -70,19 +110,42 @@ label {
   font-weight: 600;
 }
 
+/* Inputs */
 input, select {
   width: 100%;
   padding: 8px;
   margin-top: 5px;
   border: 1px solid rgb(52, 241, 52);
   border-radius: 4px;
+  transition: 0.3s;
 }
 
+/* Focus effect (NEW) */
+input:focus,
+select:focus {
+  outline: none;
+  border-color: green;
+  box-shadow: 0 0 5px rgba(0,128,0,0.3);
+}
+
+/* Validation (NEW) */
+input.invalid,
+select.invalid {
+  border: 2px solid red;
+}
+
+input.valid,
+select.valid {
+  border: 2px solid green;
+}
+
+/* Radio */
 input[type="radio"] {
   width: auto;
   margin-right: 5px;
 }
 
+/* Button */
 button {
   margin-top: 20px;
   width: 100%;
@@ -93,12 +156,14 @@ button {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
   background: rgb(58, 87, 35);
 }
 
+/* Alert */
 .alert {
   background: #4CAF50;
   color: white;
@@ -110,14 +175,27 @@ button:hover {
   align-items: center;
 }
 
+.alert button {
+  background: transparent;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .hidden {
   display: none;
 }
 
-.alert button {
-  background: transparent;
-  border: none;
-  color:white;
-  font-weight: bold;
-  cursor: pointer;
+/* ========================= */
+/* 📱 MOBILE FIX */
+/* ========================= */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .left-side {
+    padding: 20px;
+  }
 }
